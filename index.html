@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Para Jatsumi 💖</title>
+
+  <style>
+    :root{
+      --bg1:#fff1f6;
+      --bg2:#ffe4ec;
+      --card:#ffffffd6;
+      --text:#1f1f1f;
+      --muted:#6b6b6b;
+      --accent:#ff4d7d;
+      --accent2:#ff87a7;
+      --shadow: 0 18px 60px rgba(0,0,0,.12);
+      --radius: 22px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 800px at 20% 10%, var(--bg1), transparent 60%),
+        radial-gradient(1000px 700px at 90% 30%, var(--bg2), transparent 55%),
+        linear-gradient(135deg, #fff, #ffeef4);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    /* ===== Corazones (ligeros + interactivos) ===== */
+    .hearts{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+    }
+    .heart{
+      position:absolute;
+      font-size:18px;
+      opacity:0;
+      user-select:none;
+      pointer-events:auto;
+      cursor:pointer;
+      animation: floatUp linear infinite;
+      filter: drop-shadow(0 6px 12px rgba(255,77,125,.12));
+      will-change: transform, opacity;
+    }
+    @keyframes floatUp{
+      0%{ transform: translateY(40vh) scale(.95); opacity:0; }
+      12%{ opacity:.65; }
+      50%{ opacity:.92; }
+      100%{ transform: translateY(-120vh) scale(1.15); opacity:0; }
+    }
+    @keyframes pop{
+      0%{ transform: scale(1); opacity:1; }
+      100%{ transform: scale(1.8); opacity:0; }
+    }
+
+    /* ===== Capa de oscurecer/blur el fondo ===== */
+    .dim{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(8px);
+      z-index:4;
+      opacity:0;
+      visibility:hidden;
+      transition: opacity .28s ease, visibility .28s ease;
+    }
+    .dim.show{
+      opacity:1;
+      visibility:visible;
+    }
+
+    .wrap{
+      position:relative;
+      z-index:1;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      transition: filter .28s ease;
+    }
+    /* mientras el overlay está abierto, lo de atrás se “apaga” un poquito */
+    body.lock .wrap{
+      filter: saturate(.92) brightness(.92);
+    }
+
+    .card{
+      width:min(880px, 100%);
+      background:var(--card);
+      backdrop-filter: blur(12px);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,77,125,.18);
+      overflow:hidden;
+      transform: translateY(2px);
+      transition: transform .28s ease, box-shadow .28s ease;
+    }
+
+    /* cuando ya se abrió, resaltamos la carta */
+    body.opened .card{
+      transform: translateY(0);
+      box-shadow: 0 26px 90px rgba(0,0,0,.18);
+    }
+
+    .top{
+      padding:30px 24px 16px;
+      border-bottom:1px solid rgba(255,77,125,.15);
+      background:
+        radial-gradient(700px 220px at 15% 0%, rgba(255,77,125,.14), transparent 60%),
+        radial-gradient(700px 260px at 85% 0%, rgba(255,135,167,.14), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.45));
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 16px;
+      border-radius:999px;
+      background:rgba(255,77,125,.12);
+      color:#c71545;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    h1{
+      margin:14px 0 6px;
+      font-size:clamp(26px,4vw,38px);
+    }
+    .subtitle{
+      color:var(--muted);
+      font-size:14.5px;
+      margin:0;
+      line-height:1.5;
+    }
+
+    .content{ padding:22px 24px 26px; }
+
+    .paper{
+      background: rgba(255,255,255,.88);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 18px;
+      padding: 18px 18px 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.05);
+      max-height: 62vh;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .line{
+      white-space: pre-wrap;
+      line-height:1.85;
+      font-size:16.5px;
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity .35s ease, transform .35s ease;
+      margin:0 0 12px 0;
+    }
+    .line.show{
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    button{
+      border:none;
+      padding:12px 16px;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+      letter-spacing:.2px;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    }
+    button:active{ transform: translateY(1px) scale(.99); }
+
+    .primary{
+      background: linear-gradient(90deg,var(--accent),var(--accent2));
+      color:white;
+      box-shadow: 0 14px 30px rgba(255,77,125,.20);
+    }
+    .ghost{
+      background: rgba(255,77,125,.10);
+      color:#b3123c;
+      border:1px solid rgba(255,77,125,.20);
+    }
+
+    /* volumen */
+    .volumeBox{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,77,125,.06);
+      border:1px solid rgba(255,77,125,.12);
+      color: var(--muted);
+      font-size: 13px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .volumeBox input[type="range"]{ width:100%; }
+
+    .finalGlow{
+      margin-top: 8px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: radial-gradient(400px 160px at 20% 0%, rgba(255,77,125,.18), transparent 60%),
+                  radial-gradient(400px 160px at 80% 20%, rgba(255,135,167,.18), transparent 60%),
+                  rgba(255,255,255,.75);
+      border: 1px solid rgba(255,77,125,.14);
+      display:none;
+      font-weight:900;
+      color:#b3123c;
+      text-align:center;
+    }
+    .finalGlow.show{ display:block; }
+
+    /* ===== Sorpresa Roblox ===== */
+    .gift{
+      margin-top: 14px;
+      padding: 14px 14px 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.82);
+      border: 1px solid rgba(255,77,125,.16);
+      box-shadow: 0 10px 26px rgba(0,0,0,.05);
+      display:none;
+    }
+    .gift.show{ display:block; }
+
+    .giftTitle{
+      font-weight: 900;
+      color:#b3123c;
+      margin-bottom: 4px;
+    }
+    .giftSub{
+      color: var(--muted);
+      font-size: 13.8px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .giftCodeRow{
+      padding: 12px 12px;
+      border-radius: 14px;
+      background: rgba(255,77,125,.08);
+      border: 1px solid rgba(255,77,125,.12);
+      margin-bottom: 10px;
+      text-align:center;
+    }
+    .giftCode{
+      font-weight: 900;
+      letter-spacing: .9px;
+      color:#7a1231;
+      font-size: 16px;
+      word-break: break-word;
+    }
+
+    .giftBtns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+
+    /* ===== Overlay (inicio) centrado y más destacado ===== */
+    .overlay{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:6;
+      padding: 22px;
+      transition:.28s ease;
+    }
+    .overlay.hidden{
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+    }
+
+    .envelope{
+      background: rgba(255,255,255,.92);
+      padding:28px 26px;
+      border-radius:28px;
+      box-shadow: 0 26px 90px rgba(0,0,0,.26);
+      text-align:center;
+      width:min(520px, 96vw);
+      border:1px solid rgba(255,77,125,.18);
+      position:relative;
+      overflow:hidden;
+      transform: translateY(0);
+    }
+    .envelope::before{
+      content:"";
+      position:absolute;
+      inset:-55px;
+      background:
+        radial-gradient(520px 260px at 30% 20%, rgba(255,77,125,.18), transparent 60%),
+        radial-gradient(520px 260px at 75% 45%, rgba(255,135,167,.18), transparent 60%);
+      transform: rotate(-8deg);
+      pointer-events:none;
+    }
+    .envelopeInner{ position:relative; z-index:1; }
+
+    .bigHeart{
+      font-size:46px;
+      animation:pulse 1.25s ease-in-out infinite;
+      margin:4px 0 8px;
+      filter: drop-shadow(0 10px 22px rgba(255,77,125,.18));
+    }
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); }
+      50%{ transform:scale(1.08); }
+    }
+    .envelope h2{
+      margin: 8px 0 8px;
+      font-size: 24px;
+    }
+    .envelope p{
+      margin:0 0 14px;
+      color:var(--muted);
+      line-height:1.55;
+      font-size: 15px;
+    }
+
+    /* ===== Botón sello corazón (decorado) ===== */
+    .sealWrap{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      margin-top: 8px;
+    }
+    .sealBtn{
+      width:104px;
+      height:104px;
+      border-radius:50%;
+      border:none;
+      background:
+        radial-gradient(circle at 30% 30%, #ffd1df, #ff6f9e 60%, #ff4d7d);
+      box-shadow:
+        0 16px 40px rgba(255,77,125,.38),
+        inset 0 5px 12px rgba(255,255,255,.65);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      animation: sealPulse 1.8s ease-in-out infinite;
+      position:relative;
+      overflow:hidden;
+    }
+    .sealBtn::after{
+      content:"";
+      position:absolute;
+      inset:-45%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.70), transparent 45%);
+      transform: rotate(18deg);
+      opacity:.60;
+      transition: opacity .18s ease;
+      pointer-events:none;
+    }
+    .sealBtn:hover::after{ opacity:.90; }
+    .sealBtn:active{ transform: scale(.95); }
+    .sealHeart{
+      font-size:44px;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.22));
+      position:relative;
+      z-index:1;
+    }
+    @keyframes sealPulse{
+      0%,100%{ transform: scale(1); }
+      50%{ transform: scale(1.08); }
+    }
+    .sealText{
+      font-size:13.7px;
+      color:rgba(31,31,31,.72);
+      letter-spacing:.3px;
+    }
+
+    .hint{
+      margin-top:12px;
+      font-size:12.8px;
+      color: rgba(31,31,31,.60);
+    }
+  </style>
+</head>
+
+<body class="lock">
+
+  <div class="hearts" id="hearts"></div>
+
+  <!-- oscurecer fondo mientras está el inicio -->
+  <div class="dim show" id="dim"></div>
+
+  <!-- audio (pon mananitas.mp3 en la misma carpeta) -->
+  <audio id="music" preload="auto">
+    <source src="mananitas.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Overlay / Inicio -->
+  <div class="overlay" id="overlay">
+    <div class="envelope">
+      <div class="envelopeInner">
+        <div class="bigHeart">💗</div>
+        <h2>Para ti, Jatsumi</h2>
+        <p>Hoy es tu cumpleaños…<br>tengo una carta para ti.</p>
+
+        <div class="sealWrap">
+          <button class="sealBtn" id="openBtn" aria-label="Abrir carta">
+            <span class="sealHeart">💖</span>
+          </button>
+          <div class="sealText">Toca el corazón para abrir</div>
+        </div>
+
+        <div class="hint">Tip: toca los corazones para “reventarlos” 💞</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carta -->
+  <div class="wrap">
+    <section class="card">
+      <div class="top">
+        <div class="badge">🎂 Feliz cumpleaños, Jatsumi 💖</div>
+        <h1>Carta a la niña mas bella.</h1>
+        <p class="subtitle">Lee con calma…</p>
+      </div>
+
+      <div class="content">
+        <div class="paper" id="paper">
+
+          <!-- TU CARTA (por párrafos, para el efecto de “Siguiente”) -->
+          <p class="line">¡Hola, Jatsumi! 💖</p>
+
+          <p class="line">Espero que este día sea súper especial para ti. No solo quisiera felicitarte por tu cumpleaños, sino también agradecerte por el regalo que eres para todos, y especialmente para mí. Eres la persona más importante que he tenido en mi vida… Bueno, supongo que eres especial para tus papás también, pero para mí lo eres mucho más, Mylove. 💖</p>
+
+          <p class="line">Hoy quiero que disfrutes cada minuto del día, que sonrías mucho con esa hermosa sonrisa junto a tu familia y amigos. Estoy seguro de que tus ojos brillarán como siempre, esos ojos tan bellos en los que me podría perder.</p>
+
+          <p class="line">Espero que este nuevo año de vida venga cargado de cosas bonitas. Ojalá pueda seguir estando a tu lado y formar parte de tu historia... Te deseo lo mejor porque te quiero muchísimo y quiero ser parte de ti.</p>
+
+          <p class="line">Feliz cumpleaños, Mylove. Gracias por existir y por hacer mis días más especiales. 💗</p>
+
+          <div class="finalGlow" id="finalGlow">Te amo muchísimo ✨</div>
+
+          <!-- Sorpresa Roblox (aparece al final) -->
+          <div class="gift" id="giftBox">
+            <div class="giftTitle">🎁 Te hice un pequeño regalo.. </div>
+            <div class="giftSub">Aquí tienes un  código de Roblox 💖 (Reclamaloooo ❤️)</div>
+
+            <div class="giftCodeRow">
+              <span class="giftCode" id="robloxCodeMasked">•••• •••• ••••</span>
+              <span class="giftCode" id="robloxCodeReal" style="display:none;"></span>
+            </div>
+
+            <div class="giftBtns">
+              <button class="ghost" id="toggleCodeBtn">Mostrar código 👀</button>
+              <button class="primary" id="copyCodeBtn">Copiar ✅</button>
+            </div>
+          </div>
+
+          <!-- Volumen -->
+          <div class="volumeBox" aria-label="Volumen">
+            🔊 Volumen
+            <input type="range" min="0" max="1" step="0.01" value="0.45" id="volume">
+          </div>
+
+          <div class="controls">
+            <button class="primary" id="nextBtn">Siguiente 💌</button>
+            <button class="ghost" id="allBtn">Ver toda la carta ✨</button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ========= CAMBIA SOLO ESTO =========
+    const CODE_ROBLOX = "RBE92Q7MFHYEFAPW"; // ej: "ABCD-EFGH-IJKL"
+    // ===================================
+
+    // ===== Música + volumen =====
+    const music = document.getElementById("music");
+    music.volume = 0.45;
+
+    document.getElementById("volume").addEventListener("input", (e) => {
+      music.volume = Number(e.target.value);
+    });
+
+    // ===== Corazones (ligeros + interactivos) =====
+    const hearts = document.getElementById("hearts");
+    const emojis = ["💗","💖","💕","💘","❤️"];
+    const HEARTS_COUNT = 26;
+
+    function spawnHeart(){
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      const size = 14 + Math.random()*20;
+      h.style.fontSize = size + "px";
+      h.style.left = (Math.random()*100) + "vw";
+      h.style.top = (60 + Math.random()*60) + "vh";
+      h.style.animationDuration = (6 + Math.random()*8) + "s";
+      h.style.animationDelay = (Math.random()*3) + "s";
+
+      h.addEventListener("click", () => {
+        h.style.animation = "pop .22s ease-out forwards";
+        setTimeout(() => {
+          h.remove();
+          setTimeout(() => hearts.appendChild(spawnHeart()), 250);
+        }, 240);
+      });
+
+      return h;
+    }
+    for(let i=0; i<HEARTS_COUNT; i++){
+      hearts.appendChild(spawnHeart());
+    }
+
+    // ===== Abrir carta (centrado + opacado antes, destacada después) =====
+    const overlay = document.getElementById("overlay");
+    const dim = document.getElementById("dim");
+
+    document.getElementById("openBtn").addEventListener("click", () => {
+      overlay.classList.add("hidden");
+      dim.classList.remove("show");
+      document.body.classList.remove("lock");
+      document.body.classList.add("opened");
+
+      // iniciar música (iPhone: requiere interacción, esto funciona)
+      music.play().catch(()=>{});
+
+      revealNext(); // muestra la primera línea
+    });
+
+    // ===== Revelado por pasos =====
+    const lines = [...document.querySelectorAll(".line")];
+    let idx = -1;
+
+    const nextBtn = document.getElementById("nextBtn");
+    const allBtn  = document.getElementById("allBtn");
+    const finalGlow = document.getElementById("finalGlow");
+    const giftBox = document.getElementById("giftBox");
+    const paper = document.getElementById("paper");
+
+    function finish(){
+      nextBtn.textContent = "Listo 💖";
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = ".75";
+      finalGlow.classList.add("show");
+      giftBox.classList.add("show");
+      paper.scrollTo({ top: paper.scrollHeight, behavior: "smooth" });
+    }
+
+    function revealNext(){
+      idx++;
+      if(idx < lines.length){
+        lines[idx].classList.add("show");
+        lines[idx].scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+      if(idx >= lines.length - 1){
+        finish();
+      }
+    }
+
+    nextBtn.addEventListener("click", revealNext);
+    allBtn.addEventListener("click", () => {
+      lines.forEach(l => l.classList.add("show"));
+      idx = lines.length - 1;
+      finish();
+    });
+
+    // ===== Roblox code (mostrar/ocultar + copiar) =====
+    const masked = document.getElementById("robloxCodeMasked");
+    const real = document.getElementById("robloxCodeReal");
+    const toggleBtn = document.getElementById("toggleCodeBtn");
+    const copyBtn = document.getElementById("copyCodeBtn");
+
+    real.textContent = CODE_ROBLOX;
+
+    let showing = false;
+    toggleBtn.addEventListener("click", () => {
+      showing = !showing;
+      masked.style.display = showing ? "none" : "inline";
+      real.style.display = showing ? "inline" : "none";
+      toggleBtn.textContent = showing ? "Ocultar código 🙈" : "Mostrar código 👀";
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(CODE_ROBLOX);
+        copyBtn.textContent = "¡Copiado! ✅";
+        setTimeout(() => copyBtn.textContent = "Copiar ✅", 1200);
+      }catch(e){
+        alert("No se pudo copiar automáticamente. Mantén presionado el código y cópialo 💗");
+      }
+    });
+  </script>
+
+</body>
+</html>
